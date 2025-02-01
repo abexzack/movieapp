@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.models.movie import Movie
 from typing import Optional
 from flask import current_app
+from app.services.database import get_db
 
 api = Blueprint('api', __name__)
 
@@ -63,7 +64,6 @@ def get_movie_streaming(movie_id: int):
 
 @api.route('/health')
 def health_check():
-    from app.services.database import get_db
     db = get_db()
     if db:
         return jsonify({
@@ -89,4 +89,22 @@ def get_trending_movies():
         return jsonify({
             "error": "Server error",
             "message": "Failed to fetch trending movies"
+        }), 500
+
+@api.route('/services')
+def get_streaming_services():
+    """Get all available streaming services"""
+    try:
+        cursor = get_db().cursor()
+        cursor.execute("SELECT service_name FROM Streaming_Services ORDER BY service_name")
+        services = [row['service_name'] for row in cursor.fetchall()]
+        
+        return jsonify({
+            "services": services
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error fetching streaming services: {e}")
+        return jsonify({
+            "error": "Server error",
+            "message": "Failed to fetch streaming services"
         }), 500 
