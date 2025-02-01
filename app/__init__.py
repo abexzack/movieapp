@@ -8,6 +8,10 @@ def create_app(config_name='default'):
     app.config.from_object(config[config_name])
     CORS(app)
 
+    with app.app_context():
+        from app.services.init_db import init_db
+        init_db()  # Initialize database tables
+
     # Register database teardown
     app.teardown_appcontext(close_db)
 

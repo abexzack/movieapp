@@ -43,10 +43,18 @@ class BaseTestCase(unittest.TestCase):
                 FOREIGN KEY (movie_id) REFERENCES Movies(id),
                 FOREIGN KEY (service_id) REFERENCES Streaming_Services(id)
             );
+
+            CREATE TABLE IF NOT EXISTS Movie_Search_History (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                movie_id INTEGER NOT NULL,
+                search_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (movie_id) REFERENCES Movies(id)
+            );
         """)
         
         # Clear existing data
         cursor.executescript("""
+            DELETE FROM Movie_Search_History;
             DELETE FROM Movie_Streamings;
             DELETE FROM Movies;
             DELETE FROM Streaming_Services;
@@ -68,6 +76,12 @@ class BaseTestCase(unittest.TestCase):
                 (1, 1),  -- Test Movie 1 on Netflix
                 (1, 2),  -- Test Movie 1 on Amazon Prime
                 (2, 1);  -- Test Movie 2 on Netflix
+
+            -- Add some search history data
+            INSERT INTO Movie_Search_History (movie_id) VALUES
+                (1), (1), (1), -- Test Movie 1 searched 3 times
+                (2), (2),      -- Test Movie 2 searched 2 times
+                (3);           -- Another Movie searched once
         """)
         
         conn.commit()

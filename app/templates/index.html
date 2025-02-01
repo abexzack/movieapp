@@ -5,210 +5,335 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Movie Streaming Search</title>
     <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --background-color: #f5f6fa;
+            --text-color: #2c3e50;
+            --error-color: #e74c3c;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
             padding: 20px;
-            background-color: #f5f5f5;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .search-container {
-            text-align: center;
-            margin: 20px 0;
-        }
-
-        #searchInput {
-            padding: 10px;
-            width: 300px;
-            font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
-            margin-right: 10px;
-        }
-
-        #searchButton {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #searchButton:hover {
-            background-color: #0056b3;
-        }
-
-        #results {
-            margin-top: 20px;
-        }
-
-        .movie-card {
-            background-color: white;
-            padding: 20px;
-            margin: 10px 0;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .movie-title {
-            font-size: 20px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .movie-year {
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .streaming-services {
+            margin-bottom: 20px;
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        .streaming-service {
-            background-color: #e9ecef;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 14px;
+        input, select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
         }
 
-        .message-container {
-            margin: 20px 0;
+        input[type="search"] {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .results-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .movie-card {
+            background: white;
+            border-radius: 8px;
             padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .movie-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .movie-title {
+            font-size: 1.2em;
+            margin: 0 0 10px 0;
+            color: var(--primary-color);
+        }
+
+        .streaming-services {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .service-tag {
+            background: var(--secondary-color);
+            color: white;
+            padding: 4px 8px;
             border-radius: 4px;
-            text-align: center;
+            font-size: 0.9em;
         }
 
         .error-message {
-            background-color: #ffe6e6;
-            border: 1px solid #ffcccc;
-            color: #dc3545;
-        }
-
-        .info-message {
-            background-color: #e6f3ff;
-            border: 1px solid #cce6ff;
-            color: #0056b3;
-        }
-
-        .no-results {
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
+            color: var(--error-color);
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
         }
 
         .loading {
-            background-color: #e9ecef;
-            border: 1px solid #dee2e6;
-            color: #495057;
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .section-title {
+            margin: 20px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        .trending-container {
+            margin-bottom: 40px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-color);
+            font-style: italic;
+        }
+
+        .movie-card .movie-stats {
+            font-size: 0.9em;
+            color: #666;
+            margin: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+            .search-container {
+                flex-direction: column;
+            }
+            
+            input[type="search"] {
+                width: 100%;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="search-container">
+    <div class="container">
         <h1>Movie Streaming Search</h1>
-        <input type="text" 
-               id="searchInput" 
-               placeholder="Enter movie title..." 
-               minlength="2"
-               onkeypress="if(event.key === 'Enter') searchMovies()">
-        <button id="searchButton" onclick="searchMovies()">Search</button>
+        
+        <div class="search-container">
+            <input 
+                type="search" 
+                id="searchInput" 
+                placeholder="Search for movies..."
+                aria-label="Search for movies"
+            >
+            <select id="yearFilter" aria-label="Filter by year">
+                <option value="">All Years</option>
+            </select>
+            <select id="serviceFilter" aria-label="Filter by streaming service">
+                <option value="">All Services</option>
+                <option value="netflix">Netflix</option>
+                <option value="amazon">Amazon Prime</option>
+            </select>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="loading" class="loading">Loading...</div>
+
+        <div id="trendingSection" class="trending-container">
+            <h2 class="section-title">Popular Movies</h2>
+            <div id="trendingResults" class="results-container"></div>
+        </div>
+
+        <div id="searchResults" class="results-container"></div>
     </div>
-    <div id="results"></div>
 
     <script>
-        const API_URL = 'http://localhost:5000';
+        // Update constants
+        const API_BASE_URL = '/api';
+        const DEBOUNCE_DELAY = 300;
 
-        function showMessage(message, type = 'info') {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `
-                <div class="message-container ${type}-message">
-                    ${message}
-                </div>
-            `;
+        // Update DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const yearFilter = document.getElementById('yearFilter');
+        const serviceFilter = document.getElementById('serviceFilter');
+        const searchResultsContainer = document.getElementById('searchResults');
+        const trendingResultsContainer = document.getElementById('trendingResults');
+        const trendingSection = document.getElementById('trendingSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const loadingIndicator = document.getElementById('loading');
+
+        // Initialize year filter options
+        function initializeYearFilter() {
+            const currentYear = new Date().getFullYear();
+            const startYear = 1900;
+            
+            for (let year = currentYear; year >= startYear; year--) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearFilter.appendChild(option);
+            }
         }
 
-        async function searchMovies() {
-            const searchInput = document.getElementById('searchInput');
-            const query = searchInput.value.trim();
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
 
-            if (!query) {
-                showMessage('Please enter a search term', 'error');
-                searchInput.focus();
-                return;
-            }
+        // Show/hide loading indicator
+        function setLoading(isLoading) {
+            loadingIndicator.style.display = isLoading ? 'block' : 'none';
+        }
 
-            if (query.length < 2) {
-                showMessage('Please enter at least 2 characters', 'error');
-                searchInput.focus();
-                return;
-            }
+        // Show/hide error message
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = message ? 'block' : 'none';
+        }
 
-            showMessage('Searching...', 'loading');
+        // Create movie card element (updated with view count)
+        function createMovieCard(movie, showStats = false) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            
+            card.innerHTML = `
+                <h2 class="movie-title">${movie.title} (${movie.year})</h2>
+                ${showStats && movie.view_count ? `
+                    <div class="movie-stats">
+                        ${movie.view_count} searches
+                    </div>
+                ` : ''}
+                <div class="streaming-services">
+                    ${movie.streaming_services.map(service => 
+                        `<span class="service-tag">${service}</span>`
+                    ).join('')}
+                </div>
+            `;
+            
+            return card;
+        }
 
+        // Add function to fetch trending movies
+        async function fetchTrendingMovies() {
             try {
-                const response = await fetch(`${API_URL}/api/movies/search?q=${encodeURIComponent(query)}`);
+                const response = await fetch(`${API_BASE_URL}/movies/trending`);
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Search failed');
+                    throw new Error(data.message || 'Failed to fetch trending movies');
                 }
 
+                trendingResultsContainer.innerHTML = '';
+                
                 if (data.results.length === 0) {
-                    showMessage(`No movies found matching "${query}"`, 'no-results');
+                    trendingResultsContainer.innerHTML = '<p class="no-results">No trending movies available</p>';
                     return;
                 }
 
-                // Display results
-                const resultsDiv = document.getElementById('results');
-                resultsDiv.innerHTML = `
-                    <div class="message-container info-message">
-                        Found ${data.count} result${data.count !== 1 ? 's' : ''} for "${query}"
-                    </div>
-                    ${data.results.map(movie => `
-                        <div class="movie-card">
-                            <div class="movie-title">${movie.title}</div>
-                            <div class="movie-year">${movie.year}</div>
-                            <div class="streaming-services">
-                                ${movie.streaming_services.length > 0 
-                                    ? movie.streaming_services.map(service => 
-                                        `<span class="streaming-service">${service}</span>`
-                                    ).join('')
-                                    : '<span class="streaming-service">Not available for streaming</span>'
-                                }
-                            </div>
-                        </div>
-                    `).join('')}
-                `;
+                data.results.forEach(movie => {
+                    trendingResultsContainer.appendChild(createMovieCard(movie, true));
+                });
 
             } catch (error) {
-                showMessage(error.message || 'An unexpected error occurred. Please try again later.', 'error');
+                showError(error.message);
+                trendingResultsContainer.innerHTML = '<p class="no-results">Failed to load trending movies</p>';
             }
         }
 
-        // Add debounce to prevent too many requests
-        let searchTimeout;
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            clearTimeout(searchTimeout);
-            if (e.target.value.trim().length >= 2) {
-                searchTimeout = setTimeout(() => {
-                    searchMovies();
-                }, 300);
-            }
-        });
+        // Update search movies function
+        async function searchMovies() {
+            const query = searchInput.value.trim();
+            const year = yearFilter.value;
+            const service = serviceFilter.value;
 
-        // Focus search input on page load
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('searchInput');
-            searchInput.focus();
-        });
+            // Show/hide sections based on search
+            trendingSection.style.display = query.length < 2 ? 'block' : 'none';
+            
+            if (query.length < 2) {
+                searchResultsContainer.innerHTML = '';
+                return;
+            }
+
+            setLoading(true);
+            showError('');
+
+            try {
+                const params = new URLSearchParams({
+                    q: query,
+                    ...(year && { year }),
+                    ...(service && { service })
+                });
+
+                const response = await fetch(`${API_BASE_URL}/movies/search?${params}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch results');
+                }
+
+                searchResultsContainer.innerHTML = '';
+                
+                if (data.results.length === 0) {
+                    searchResultsContainer.innerHTML = '<p class="no-results">No movies found</p>';
+                    return;
+                }
+
+                data.results.forEach(movie => {
+                    searchResultsContainer.appendChild(createMovieCard(movie));
+                });
+
+            } catch (error) {
+                showError(error.message);
+                searchResultsContainer.innerHTML = '';
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Update initialize function
+        function initialize() {
+            initializeYearFilter();
+            
+            // Add event listeners
+            searchInput.addEventListener('input', debounce(searchMovies, DEBOUNCE_DELAY));
+            yearFilter.addEventListener('change', searchMovies);
+            serviceFilter.addEventListener('change', searchMovies);
+
+            // Load trending movies on startup
+            fetchTrendingMovies();
+
+            // Check API health
+            fetch(`${API_BASE_URL}/health`)
+                .catch(error => {
+                    showError('API is not available. Please try again later.');
+                });
+        }
+
+        // Start the application
+        initialize();
     </script>
 </body>
-</html> 
 </html> 
