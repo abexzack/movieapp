@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from app.models.movie import Movie
 from typing import Optional
+from flask import current_app
 
 api = Blueprint('api', __name__)
 
@@ -72,4 +73,20 @@ def health_check():
     return jsonify({
         "status": "unhealthy",
         "database": "disconnected"
-    }), 500 
+    }), 500
+
+@api.route('/movies/trending')
+def get_trending_movies():
+    """Get most searched/popular movies"""
+    try:
+        movies = Movie.get_trending(limit=10)  # Get top 10 trending movies
+        return jsonify({
+            "results": [movie.to_dict() for movie in movies],
+            "count": len(movies)
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error fetching trending movies: {e}")
+        return jsonify({
+            "error": "Server error",
+            "message": "Failed to fetch trending movies"
+        }), 500 
