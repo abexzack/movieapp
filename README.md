@@ -1,9 +1,10 @@
 # Movie Streaming Search API
 
-A Flask-based REST API that allows users to search for movies and find which streaming services offer them. The application includes both a backend API and a simple frontend interface.
+A Flask-based RESTful API that allows users to search for movies and find which streaming services offer them. The application follows RESTful principles and includes both a backend API and a simple frontend interface.
 
 ## Features
 
+- RESTful API architecture
 - Search movies by title
 - Filter results by year and streaming service
 - Real-time search with debouncing
@@ -12,6 +13,8 @@ A Flask-based REST API that allows users to search for movies and find which str
 - Error handling and user feedback
 - SQLite database integration
 - Cross-Origin Resource Sharing (CORS) support
+- Blueprint-based routing
+- Configuration management for different environments
 
 ## Prerequisites
 
@@ -56,6 +59,24 @@ http://localhost:5000/web
 
 ## API Endpoints
 
+### Root
+- **URL**: `/`
+- **Method**: `GET`
+- **Description**: Get API information and available endpoints
+- **Success Response**: `200 OK`
+```json
+{
+    "message": "Movie API is running",
+    "endpoints": {
+        "search": "/api/movies/search?q=<query>",
+        "movie": "/api/movies/<id>",
+        "streaming": "/api/movies/<id>/streaming",
+        "health": "/api/health",
+        "web_interface": "/web"
+    }
+}
+```
+
 ### Search Movies
 - **URL**: `/api/movies/search`
 - **Method**: `GET`
@@ -71,17 +92,33 @@ http://localhost:5000/web
             "id": 1,
             "title": "The Matrix",
             "year": 1999,
-            "streaming_services": ["Netflix", "Amazon Prime"],
-            "exact_match": true
+            "streaming_services": ["Netflix", "Amazon Prime"]
         }
     ],
     "count": 1,
-    "query": "matrix"
+    "query": "matrix",
+    "filters": {
+        "year": null,
+        "service": null
+    }
 }
 ```
 
-### Get Streaming Services
-- **URL**: `/api/movies/<movie_id>/streaming`
+### Get Movie
+- **URL**: `/api/movies/<id>`
+- **Method**: `GET`
+- **Success Response**: `200 OK`
+```json
+{
+    "id": 1,
+    "title": "The Matrix",
+    "year": 1999,
+    "streaming_services": ["Netflix", "Amazon Prime"]
+}
+```
+
+### Get Movie Streaming Services
+- **URL**: `/api/movies/<id>/streaming`
 - **Method**: `GET`
 - **Success Response**: `200 OK`
 ```json
@@ -103,29 +140,41 @@ http://localhost:5000/web
 }
 ```
 
-## Running Tests
-
-Run the test suite:
-```bash
-python -m unittest tests.py
-```
-
-Run tests with coverage:
-```bash
-coverage run -m unittest tests.py
-coverage report
-```
-
 ## Project Structure
 
 ```
 movie-streaming-search/
-├── app.py              # Main Flask application
-├── database.py         # Database initialization and setup
-├── index.html         # Frontend interface
-├── tests.py           # Test suite
-├── requirements.txt   # Python dependencies
-└── README.md         # This file
+├── app/
+│   ├── __init__.py          # Application factory
+│   ├── models/              # Database models
+│   │   ├── __init__.py
+│   │   └── movie.py        # Movie model and database operations
+│   ├── routes/              # Route handlers
+│   │   ├── __init__.py
+│   │   ├── api.py          # API endpoints
+│   │   └── web.py          # Web interface routes
+│   ├── services/            # Application services
+│   │   ├── __init__.py
+│   │   └── database.py     # Database connection handling
+│   └── templates/           # HTML templates
+│       └── index.html      # Web interface template
+├── app.py                   # Application entry point
+├── config.py                # Configuration settings
+├── tests.py                 # Test suite
+├── requirements.txt         # Python dependencies
+└── README.md               # Documentation
+```
+
+## Configuration
+
+The application supports multiple environments through configuration classes:
+- Development (default)
+- Testing
+- Production
+
+Configuration can be set using environment variables:
+```bash
+export FLASK_ENV=development  # or testing, production
 ```
 
 ## Database Schema
@@ -147,10 +196,18 @@ movie-streaming-search/
 ## Error Handling
 
 The API includes comprehensive error handling for:
-- Invalid input validation
-- Database connection issues
-- Resource not found
-- Server errors
+- Invalid input validation (400)
+- Resource not found (404)
+- Database connection issues (500)
+- Server errors (500)
+
+Error responses follow a consistent format:
+```json
+{
+    "error": "error_type",
+    "message": "Detailed error message"
+}
+```
 
 ## Contributing
 
