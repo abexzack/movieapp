@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Streaming Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .search-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        #searchInput {
+            padding: 10px;
+            width: 300px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        #searchButton {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #searchButton:hover {
+            background-color: #0056b3;
+        }
+
+        #results {
+            margin-top: 20px;
+        }
+
+        .movie-card {
+            background-color: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .movie-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .movie-year {
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .streaming-services {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .streaming-service {
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+        }
+
+        .message-container {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .error-message {
+            background-color: #ffe6e6;
+            border: 1px solid #ffcccc;
+            color: #dc3545;
+        }
+
+        .info-message {
+            background-color: #e6f3ff;
+            border: 1px solid #cce6ff;
+            color: #0056b3;
+        }
+
+        .no-results {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+        }
+
+        .loading {
+            background-color: #e9ecef;
+            border: 1px solid #dee2e6;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="search-container">
+        <h1>Movie Streaming Search</h1>
+        <input type="text" 
+               id="searchInput" 
+               placeholder="Enter movie title..." 
+               minlength="2"
+               onkeypress="if(event.key === 'Enter') searchMovies()">
+        <button id="searchButton" onclick="searchMovies()">Search</button>
+    </div>
+    <div id="results"></div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+
+        function showMessage(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <div class="message-container ${type}-message">
+                    ${message}
+                </div>
+            `;
+        }
+
+        async function searchMovies() {
+            const searchInput = document.getElementById('searchInput');
+            const query = searchInput.value.trim();
+
+            if (!query) {
+                showMessage('Please enter a search term', 'error');
+                searchInput.focus();
+                return;
+            }
+
+            if (query.length < 2) {
+                showMessage('Please enter at least 2 characters', 'error');
+                searchInput.focus();
+                return;
+            }
+
+            showMessage('Searching...', 'loading');
+
+            try {
+                const response = await fetch(`${API_URL}/api/movies/search?q=${encodeURIComponent(query)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Search failed');
+                }
+
+                if (data.results.length === 0) {
+                    showMessage(`No movies found matching "${query}"`, 'no-results');
+                    return;
+                }
+
+                // Display results
+                const resultsDiv = document.getElementById('results');
+                resultsDiv.innerHTML = `
+                    <div class="message-container info-message">
+                        Found ${data.count} result${data.count !== 1 ? 's' : ''} for "${query}"
+                    </div>
+                    ${data.results.map(movie => `
+                        <div class="movie-card">
+                            <div class="movie-title">${movie.title}</div>
+                            <div class="movie-year">${movie.year}</div>
+                            <div class="streaming-services">
+                                ${movie.streaming_services.length > 0 
+                                    ? movie.streaming_services.map(service => 
+                                        `<span class="streaming-service">${service}</span>`
+                                    ).join('')
+                                    : '<span class="streaming-service">Not available for streaming</span>'
+                                }
+                            </div>
+                        </div>
+                    `).join('')}
+                `;
+
+            } catch (error) {
+                showMessage(error.message || 'An unexpected error occurred. Please try again later.', 'error');
+            }
+        }
+
+        // Add debounce to prevent too many requests
+        let searchTimeout;
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            if (e.target.value.trim().length >= 2) {
+                searchTimeout = setTimeout(() => {
+                    searchMovies();
+                }, 300);
+            }
+        });
+
+        // Focus search input on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.focus();
+        });
+    </script>
+</body>
+</html> 
+</html> 
