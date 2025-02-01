@@ -140,6 +140,82 @@ http://localhost:5000/web
 }
 ```
 
+## Running Tests
+
+The project uses Python's unittest framework with coverage reporting. Tests are organized into unit tests and integration tests.
+
+### Test Structure
+```
+tests/
+├── __init__.py
+├── base.py                 # Base test class with common setup
+├── run_tests.py           # Test runner with coverage
+├── unit/                  # Unit tests
+│   ├── __init__.py
+│   └── test_movie_model.py
+└── integration/           # Integration tests
+    ├── __init__.py
+    └── test_api.py
+```
+
+### Running Tests
+
+1. Run all tests with coverage:
+```bash
+python -m tests.run_tests
+```
+
+2. Run specific test files:
+```bash
+python -m unittest tests/unit/test_movie_model.py
+python -m unittest tests/integration/test_api.py
+```
+
+3. Run tests with verbose output:
+```bash
+python -m unittest -v
+```
+
+### Coverage Reports
+
+After running tests with coverage, you can:
+
+1. View coverage in terminal:
+```bash
+coverage report
+```
+
+2. Generate HTML coverage report:
+```bash
+coverage html
+```
+Then open `coverage_report/index.html` in your browser
+
+### Test Categories
+
+1. Unit Tests:
+   - Movie model creation and serialization
+   - Search functionality
+   - Streaming service retrieval
+
+2. Integration Tests:
+   - API endpoints
+   - Database interactions
+   - Error handling
+
+### Running Tests in Different Environments
+
+```bash
+# Development
+FLASK_ENV=development python -m tests.run_tests
+
+# Testing
+FLASK_ENV=testing python -m tests.run_tests
+
+# Production
+FLASK_ENV=production python -m tests.run_tests
+```
+
 ## Project Structure
 
 ```
