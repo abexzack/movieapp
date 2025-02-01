@@ -140,6 +140,211 @@ http://localhost:5000/web
 }
 ```
 
+## API Documentation
+
+### Authentication
+
+Currently, the API is open and does not require authentication.
+
+### Base URL
+
+```
+http://localhost:5000/api
+```
+
+### Response Format
+
+All responses are in JSON format. Successful responses have a 200 status code and contain the requested data. Error responses include an error message and appropriate status code.
+
+### Endpoints
+
+#### 1. Search Movies
+
+Search for movies with optional filters.
+
+```
+GET /api/movies/search
+```
+
+**Query Parameters:**
+- `q` (required): Search query string
+  - Minimum length: 2 characters
+  - Example: `matrix`
+- `year` (optional): Filter by release year
+  - Format: YYYY
+  - Example: `1999`
+- `service` (optional): Filter by streaming service
+  - Case insensitive
+  - Example: `netflix`
+
+**Success Response (200 OK):**
+```json
+{
+    "results": [
+        {
+            "id": 1,
+            "title": "The Matrix",
+            "year": 1999,
+            "streaming_services": ["Netflix", "Amazon Prime"]
+        }
+    ],
+    "count": 1,
+    "query": "matrix",
+    "filters": {
+        "year": 1999,
+        "service": "netflix"
+    }
+}
+```
+
+**Error Responses:**
+- `400 Bad Request`: Invalid or missing query parameter
+```json
+{
+    "error": "Invalid input",
+    "message": "Search query must be at least 2 characters"
+}
+```
+
+#### 2. Get Movie Details
+
+Retrieve detailed information about a specific movie.
+
+```
+GET /api/movies/<id>
+```
+
+**URL Parameters:**
+- `id`: Movie ID (integer)
+
+**Success Response (200 OK):**
+```json
+{
+    "id": 1,
+    "title": "The Matrix",
+    "year": 1999,
+    "streaming_services": ["Netflix", "Amazon Prime"]
+}
+```
+
+**Error Response:**
+- `404 Not Found`: Movie not found
+```json
+{
+    "error": "Not found",
+    "message": "Movie with ID 1 not found"
+}
+```
+
+#### 3. Get Movie Streaming Services
+
+Get streaming service availability for a specific movie.
+
+```
+GET /api/movies/<id>/streaming
+```
+
+**URL Parameters:**
+- `id`: Movie ID (integer)
+
+**Success Response (200 OK):**
+```json
+{
+    "movie_id": 1,
+    "title": "The Matrix",
+    "streaming_services": ["Netflix", "Amazon Prime"]
+}
+```
+
+**Error Response:**
+- `404 Not Found`: Movie not found
+```json
+{
+    "error": "Not found",
+    "message": "Movie with ID 1 not found"
+}
+```
+
+#### 4. Health Check
+
+Check API and database health status.
+
+```
+GET /api/health
+```
+
+**Success Response (200 OK):**
+```json
+{
+    "status": "healthy",
+    "database": "connected"
+}
+```
+
+**Error Response:**
+- `500 Server Error`: Database connection failed
+```json
+{
+    "status": "unhealthy",
+    "database": "disconnected"
+}
+```
+
+### Common Error Responses
+
+1. **400 Bad Request**
+   - Invalid input parameters
+   - Missing required fields
+   - Validation failures
+
+2. **404 Not Found**
+   - Resource does not exist
+   - Invalid endpoint
+
+3. **500 Server Error**
+   - Database connection issues
+   - Internal server errors
+
+### Rate Limiting
+
+Currently, there are no rate limits implemented.
+
+### Example Usage
+
+#### Using cURL
+
+```bash
+# Search for movies
+curl "http://localhost:5000/api/movies/search?q=matrix&year=1999&service=netflix"
+
+# Get movie details
+curl "http://localhost:5000/api/movies/1"
+
+# Get streaming services
+curl "http://localhost:5000/api/movies/1/streaming"
+
+# Check health
+curl "http://localhost:5000/api/health"
+```
+
+#### Using Python Requests
+
+```python
+import requests
+
+# Search for movies
+response = requests.get(
+    "http://localhost:5000/api/movies/search",
+    params={"q": "matrix", "year": 1999, "service": "netflix"}
+)
+
+# Get movie details
+response = requests.get("http://localhost:5000/api/movies/1")
+
+# Get streaming services
+response = requests.get("http://localhost:5000/api/movies/1/streaming")
+```
+
 ## Running Tests
 
 The project uses Python's unittest framework with coverage reporting. Tests are organized into unit tests and integration tests.
