@@ -32,6 +32,14 @@ def init_db():
             search_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (movie_id) REFERENCES Movies(id)
         );
+
+        -- Insert default streaming services if they don't exist
+        INSERT OR IGNORE INTO Streaming_Services (service_name) VALUES
+            ('Netflix'),
+            ('Amazon Prime'),
+            ('Disney+'),
+            ('Hulu'),
+            ('HBO Max');
     """)
     
     conn.commit()
